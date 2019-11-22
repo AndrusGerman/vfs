@@ -11,7 +11,7 @@ import (
 
 // ErrBoundary is returned if an operation
 // can not act across filesystem boundaries.
-var ErrBoundary = errors.New("Crossing boundary")
+var ErrBoundary = errors.New("crossing boundary")
 
 // Create a new MountFS based on a root filesystem.
 func Create(rootFS vfs.Filesystem) *MountFS {

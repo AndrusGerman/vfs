@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	errDummy = errors.New("Not implemented")
+	errDummy = errors.New("not implemented")
 	// Complete dummy base
 	baseFSDummy = Dummy(errDummy)
 	ro          = ReadOnly(baseFSDummy)
