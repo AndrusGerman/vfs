@@ -2,10 +2,11 @@ package mountfs
 
 import (
 	"errors"
-	"github.com/blang/vfs"
 	"os"
 	filepath "path"
 	"strings"
+
+	"github.com/AndrusGerman/vfs"
 )
 
 // ErrBoundary is returned if an operation

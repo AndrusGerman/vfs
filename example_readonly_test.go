@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/blang/vfs"
+	"github.com/AndrusGerman/vfs"
 )
 
 // Every vfs.Filesystem could be easily wrapped

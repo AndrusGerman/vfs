@@ -2,10 +2,11 @@ package vfs_test
 
 import (
 	"fmt"
-	"github.com/blang/vfs"
-	"github.com/blang/vfs/memfs"
-	"github.com/blang/vfs/mountfs"
 	"os"
+
+	"github.com/AndrusGerman/vfs"
+	"github.com/AndrusGerman/vfs/memfs"
+	"github.com/AndrusGerman/vfs/mountfs"
 )
 
 func Example() {

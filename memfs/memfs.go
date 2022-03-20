@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/blang/vfs"
+	"github.com/AndrusGerman/vfs"
 )
 
 var (

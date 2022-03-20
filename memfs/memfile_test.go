@@ -1,8 +1,9 @@
 package memfs
 
 import (
-	"github.com/blang/vfs"
 	"testing"
+
+	"github.com/AndrusGerman/vfs"
 )
 
 func TestFileInterface(t *testing.T) {

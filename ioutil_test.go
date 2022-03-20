@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/blang/vfs"
-	"github.com/blang/vfs/memfs"
+	"github.com/AndrusGerman/vfs"
+	"github.com/AndrusGerman/vfs/memfs"
 )
 
 var (

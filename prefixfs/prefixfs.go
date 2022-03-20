@@ -3,7 +3,7 @@ package prefixfs
 import (
 	"os"
 
-	"github.com/blang/vfs"
+	"github.com/AndrusGerman/vfs"
 )
 
 // A FS that prefixes the path in each vfs.Filesystem operation.
