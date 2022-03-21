@@ -59,6 +59,20 @@ func (ctx *ReplicationFS) Rename(oldpath string, newpath string) error {
 	return nil
 }
 
+func (ctx *ReplicationFS) Symlink(oldname, newname string) error {
+	err := ctx.primary.Symlink(oldname, newname)
+	if err != nil {
+		return err
+	}
+	for _, f := range ctx.secondary {
+		err := f.Symlink(oldname, newname)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (ctx *ReplicationFS) Remove(name string) error {
 	err := ctx.primary.Remove(name)
 	if err != nil && !errIsNotFileExist(err) {

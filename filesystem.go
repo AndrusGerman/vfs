@@ -22,13 +22,10 @@ type Filesystem interface {
 	Remove(name string) error
 	Rename(oldpath, newpath string) error
 	Mkdir(name string, perm os.FileMode) error
-<<<<<<< HEAD
-=======
 	Symlink(oldname, newname string) error
 	// TempDir() string
 	// Chmod(name string, mode FileMode) error
 	// Chown(name string, uid, gid int) error
->>>>>>> 0e4651e (Add support for symlinks; Basic support only in MemFS)
 	Stat(name string) (os.FileInfo, error)
 	Lstat(name string) (os.FileInfo, error)
 	ReadDir(path string) ([]os.FileInfo, error)

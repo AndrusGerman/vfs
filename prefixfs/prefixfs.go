@@ -16,11 +16,7 @@ type FS struct {
 
 // Create returns a file system that prefixes all paths and forwards to root.
 func Create(root vfs.Filesystem, prefix string) *FS {
-<<<<<<< HEAD
 	return &FS{fs: root, prefix: prefix}
-=======
-	return &FS{Filesystem: root, Prefix: prefix}
->>>>>>> 0e4651e (Add support for symlinks; Basic support only in MemFS)
 }
 
 // prefixPath returns path with the prefix prefixed.
@@ -58,7 +54,7 @@ func (fs *FS) Mkdir(name string, perm os.FileMode) error {
 
 // Symlink implements vfs.Filesystem.
 func (fs *FS) Symlink(oldname, newname string) error {
-	return fs.Filesystem.Symlink(fs.PrefixPath(oldname), fs.PrefixPath(newname))
+	return fs.fs.Symlink(fs.prefixPath(oldname), fs.prefixPath(newname))
 }
 
 // Stat implements vfs.Filesystem.
