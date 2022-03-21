@@ -11,19 +11,31 @@ import (
 	"github.com/AndrusGerman/vfs"
 )
 
+type dumpManager struct {
+	fs   vfs.Filesystem
+	buff io.Writer
+}
+
 func NewDumpfs(fs vfs.Filesystem, buff io.Writer) error {
-	fileRoot, err := fs.Lstat("/")
+	// New Manager
+	var dm = &dumpManager{fs: fs, buff: buff}
+	root, err := dm.createDump()
 	if err != nil {
 		return err
 	}
-	root, err := DumpadoFileInfo(fs, fileRoot, "/")
-	if err != nil {
-		return err
-	}
+	// Encode Dumpfs
 	return gob.NewEncoder(buff).Encode(root)
 }
 
-func DumpadoFileInfo(fs vfs.Filesystem, thisFile fs.FileInfo, parentDir string) (*DumpFileInfo, error) {
+func (dm *dumpManager) createDump() (*DumpFileInfo, error) {
+	fileRoot, err := dm.fs.Lstat("/")
+	if err != nil {
+		return nil, err
+	}
+	return dm.dumpFileInfo(fileRoot, "/")
+}
+
+func (dm *dumpManager) dumpFileInfo(thisFile fs.FileInfo, parentDir string) (*DumpFileInfo, error) {
 	if thisFile == nil {
 		return nil, nil
 	}
@@ -36,7 +48,7 @@ func DumpadoFileInfo(fs vfs.Filesystem, thisFile fs.FileInfo, parentDir string) 
 	}
 
 	if !thisFile.IsDir() {
-		file, err := fs.OpenFile(name, os.O_RDONLY, 0777)
+		file, err := dm.fs.OpenFile(name, os.O_RDONLY, 0777)
 		if err != nil {
 			return nil, err
 		}
@@ -48,8 +60,7 @@ func DumpadoFileInfo(fs vfs.Filesystem, thisFile fs.FileInfo, parentDir string) 
 	}
 
 	if thisFile.IsDir() {
-		fs.ReadDir(name)
-		childs, err := createChildsNewDump(fs, name)
+		childs, err := dm.createChildsDump(name)
 		if err != nil {
 			return nil, err
 		}
@@ -60,15 +71,15 @@ func DumpadoFileInfo(fs vfs.Filesystem, thisFile fs.FileInfo, parentDir string) 
 
 }
 
-func createChildsNewDump(mem vfs.Filesystem, childName string) (map[string]*DumpFileInfo, error) {
-	files, err := mem.ReadDir(childName)
+func (dm *dumpManager) createChildsDump(childName string) (map[string]*DumpFileInfo, error) {
+	files, err := dm.fs.ReadDir(childName)
 	if err != nil {
 		return nil, nil
 	}
 	var childs = make(map[string]*DumpFileInfo)
 	for _, file := range files {
 		joinName := path.Join(childName, file.Name())
-		value, err := DumpadoFileInfo(mem, file, childName)
+		value, err := dm.dumpFileInfo(file, childName)
 		if err != nil {
 			return nil, err
 		}
