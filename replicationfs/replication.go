@@ -1,8 +1,9 @@
-package replication
+package replicationfs
 
 import (
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"strings"
 
@@ -59,12 +60,12 @@ func (ctx *ReplicationFS) Rename(oldpath string, newpath string) error {
 
 func (ctx *ReplicationFS) Remove(name string) error {
 	err := ctx.primary.Remove(name)
-	if err != nil {
+	if err != nil && !errIsNotFileExist(err) {
 		return err
 	}
 	for _, f := range ctx.secondary {
 		err := f.Remove(name)
-		if err != nil {
+		if err != nil && !errIsNotFileExist(err) {
 			return err
 		}
 	}
@@ -122,11 +123,20 @@ func newreplicationFileCreate(name string, flag int, perm os.FileMode, primary v
 	return r, err
 }
 
-func (fi replicationFile) Sync() error {
+func (fi *replicationFile) Sync() error {
+	if fi == nil {
+		return ErrPrimaryFileIsNull
+	}
+	for _, f := range fi.secondary {
+		if f == nil {
+			continue
+		}
+		f.Sync()
+	}
 	return fi.primary.Sync()
 }
 
-func (fi replicationFile) Close() error {
+func (fi *replicationFile) Close() error {
 	if fi.primary == nil {
 		return ErrPrimaryFileIsNull
 	}
@@ -138,16 +148,26 @@ func (fi replicationFile) Close() error {
 	}
 	return fi.primary.Close()
 }
-func (fi replicationFile) Truncate(n int64) error {
+func (fi *replicationFile) Truncate(n int64) error {
+	if fi.primary == nil {
+		return ErrPrimaryFileIsNull
+	}
 	for _, f := range fi.secondary {
+		if f == nil {
+			continue
+		}
 		f.Truncate(n)
 	}
 	return fi.primary.Truncate(n)
 }
-func (fi replicationFile) Name() string {
+func (fi *replicationFile) Name() string {
+	if fi.primary == nil {
+		log.Println(ErrPrimaryFileIsNull)
+		return ""
+	}
 	return fi.primary.Name()
 }
-func (fi replicationFile) Write(p []byte) (n int, err error) {
+func (fi *replicationFile) Write(p []byte) (n int, err error) {
 	if fi.primary == nil {
 		return 0, ErrPrimaryFileIsNull
 	}
@@ -161,16 +181,29 @@ func (fi replicationFile) Write(p []byte) (n int, err error) {
 	return fi.primary.Write(p)
 }
 
-func (fi replicationFile) Read(p []byte) (n int, err error) {
+func (fi *replicationFile) Read(p []byte) (n int, err error) {
+	if fi.primary == nil {
+		return 0, ErrPrimaryFileIsNull
+	}
 	return fi.primary.Read(p)
 }
 
-func (fi replicationFile) ReadAt(p []byte, off int64) (n int, err error) {
+func (fi *replicationFile) ReadAt(p []byte, off int64) (n int, err error) {
+	if fi.primary == nil {
+		return 0, ErrPrimaryFileIsNull
+	}
 	return fi.primary.ReadAt(p, off)
 }
 
-func (fi replicationFile) Seek(offset int64, whence int) (int64, error) {
-	for _, f := range fi.secondary {
+func (fi *replicationFile) Seek(offset int64, whence int) (int64, error) {
+	if fi.primary == nil {
+		return 0, ErrPrimaryFileIsNull
+	}
+	for i, f := range fi.secondary {
+		if f == nil {
+			logSecondaryFileIsNull(fi.Name(), i)
+			continue
+		}
 		f.Seek(offset, whence)
 	}
 	return fi.primary.Seek(offset, whence)
@@ -181,4 +214,11 @@ func errIsFileExist(err error) bool {
 		return false
 	}
 	return strings.Contains(err.Error(), "file exists")
+}
+
+func errIsNotFileExist(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), "file does not exist")
 }
