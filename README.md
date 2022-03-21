@@ -1,12 +1,12 @@
-vfs for golang [![Build Status](https://travis-ci.org/blang/vfs.svg?branch=master)](https://travis-ci.org/blang/vfs) [![GoDoc](https://godoc.org/github.com/AndrusGerman/vfs?status.png)](https://godoc.org/github.com/AndrusGerman/vfs) [![Coverage Status](https://img.shields.io/coveralls/blang/vfs.svg)](https://coveralls.io/r/blang/vfs?branch=master) [![Join the chat at https://gitter.im/blang/vfs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/blang/vfs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+vfs for golang  [![GoDoc](https://godoc.org/github.com/AndrusGerman/vfs?status.png)](https://godoc.org/github.com/AndrusGerman/vfs) 
 ======
 
 vfs is library to support virtual filesystems. It provides basic abstractions of filesystems and implementations, like `OS` accessing the file system of the underlying OS and `memfs` a full filesystem in-memory.
 
-Usage
+Basic Usage
 -----
 ```bash
-$ go get github.com/AndrusGerman/vfs
+$ go get github.com/AndrusGerman/vfs@master
 ```
 Note: Always vendor your dependencies or fix on a specific version tag.
 
@@ -52,13 +52,61 @@ fs.Mkdir("/memfs/testdir", 0777)
 fs.Mkdir("/tmp/testdir", 0777)
 ```
 
+Replication:
+-----
+```go
+// Create multiple fully writable filesystem in memory
+inMemoryA := memfs.Create()
+inMemoryB := memfs.Create()
+
+// Join and replication events vfs
+replivfs := replicationfs.NewReplication(inMemoryA, inMemoryB)
+
+// Create a vfs accessing the filesystem of the underlying OS
+primaryDisk := prefixfs.Create(vfs.OS(), "/myosfolder")
+// Sync primaryDisk to => replivfs
+err := replicationfs.Sync(nil, primaryDisk, replivfs)
+if err != nil {
+	panic(err)
+}
+```
+Dump Data
+----
+
+```go
+// Save Data
+// Create a vfs accessing the filesystem of the underlying OS
+primaryDisk := prefixfs.Create(vfs.OS(), "/myosfolder")
+file, err := os.Create("mybackup.vfs")
+if err != nil {
+	panic(err)
+}
+// Save data vfs
+err = dumpfs.NewDumpfs(primaryDisk, file) // save data in file
+if err != nil {
+	panic(err)
+}
+file.Close()
+
+// Read save Data
+// Create a fully writable filesystem in memory
+mvfs := memfs.Create()
+file, err = os.Open("mybackup.vfs")
+if err != nil {
+	panic(err)
+}
+err = dumpfs.GetDumpfs(file, mvfs)// Set save data in new fs
+if err != nil {
+	panic(err)
+}
+```
+----
 Check detailed examples below. Also check the [GoDocs](http://godoc.org/github.com/AndrusGerman/vfs).
 
 Why should I use this lib?
 -----
 
 - Only Stdlib
-- (Nearly) Fully tested (Coverage >90%)
 - Easy to create your own filesystem
 - Mock a full filesystem for testing (or use included `memfs`)
 - Compose/Wrap Filesystems `ReadOnly(OS())` and write simple Wrappers
@@ -73,7 +121,7 @@ Features and Examples
 - [MemFS - full in-memory filesystem](http://godoc.org/github.com/AndrusGerman/vfs/memfs#example-MemFS)
 - [MountFS - support mounts across filesystems](http://godoc.org/github.com/AndrusGerman/vfs/mountfs#example-MountFS)
 
-Current state: ALPHA
+Current state: MEGA ALPHA
 -----
 
 While the functionality is quite stable and heavily tested, interfaces are subject to change. 
@@ -89,6 +137,14 @@ Contribution
 -----
 
 Feel free to make a pull request. For bigger changes create a issue first to discuss about it.
+
+thanks to [Benedikt Lang](https://github.com/blang/vfs), for starting this incredible project
+
+disclaimer
+-----
+Much of the code needs to be refactored and improved, and there may be some things that don't work.
+I appreciate any contribution and I will gladly revise it to include it.
+Little things are also appreciated, including translations and code homogenization.
 
 License
 -----
