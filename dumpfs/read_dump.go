@@ -9,18 +9,29 @@ import (
 	"github.com/AndrusGerman/vfs"
 )
 
+type readDumpManager struct {
+	fs   vfs.Filesystem
+	buff io.Reader
+}
+
 func GetDumpfs(buff io.Reader, fs vfs.Filesystem) error {
-	var data = new(DumpFileInfo)
-	err := gob.NewDecoder(buff).Decode(data)
+	var rdm = &readDumpManager{fs: fs, buff: buff}
+	dfi, err := rdm.decode()
 	if err != nil {
 		return err
 	}
-	return getFilesByDump(fs, data)
+	return rdm.getFilesByDump(dfi)
 }
 
-func getFilesByDump(dst vfs.Filesystem, src *DumpFileInfo) error {
+func (rdm *readDumpManager) decode() (*DumpFileInfo, error) {
+	var dfi = new(DumpFileInfo)
+	err := gob.NewDecoder(rdm.buff).Decode(dfi)
+	return dfi, err
+}
+
+func (rdm *readDumpManager) getFilesByDump(src *DumpFileInfo) error {
 	for _, dumpFile := range src.Childs {
-		err := createFileByDump(dst, dumpFile)
+		err := rdm.createFileByDump(dumpFile)
 		if err != nil {
 			return err
 		}
@@ -29,16 +40,16 @@ func getFilesByDump(dst vfs.Filesystem, src *DumpFileInfo) error {
 	return nil
 }
 
-func createFileByDump(fs vfs.Filesystem, dumpFile *DumpFileInfo) error {
+func (rdm *readDumpManager) createFileByDump(dumpFile *DumpFileInfo) error {
 	var name = path.Join(dumpFile.ParentDir, dumpFile.Name)
 	if dumpFile.Dir {
-		err := fs.Mkdir(name, dumpFile.Mode)
+		err := rdm.fs.Mkdir(name, dumpFile.Mode)
 		if err != nil {
 			return nil
 		}
 	}
 	if !dumpFile.Dir {
-		file, err := fs.OpenFile(name, os.O_CREATE|os.O_RDWR, 0777)
+		file, err := rdm.fs.OpenFile(name, os.O_CREATE|os.O_RDWR, 0777)
 		if err != nil {
 			return err
 		}
@@ -46,7 +57,7 @@ func createFileByDump(fs vfs.Filesystem, dumpFile *DumpFileInfo) error {
 		file.Write(dumpFile.Buf)
 	}
 	for _, dumpFile := range dumpFile.Childs {
-		err := createFileByDump(fs, dumpFile)
+		err := rdm.createFileByDump(dumpFile)
 		if err != nil {
 			return nil
 		}
