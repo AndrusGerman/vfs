@@ -24,7 +24,7 @@ func NewDumpfs(fs vfs.Filesystem, buff io.Writer) error {
 		return err
 	}
 	// Encode Dumpfs
-	return gob.NewEncoder(buff).Encode(root)
+	return dm.encode(root)
 }
 
 func (dm *dumpManager) createDump() (*DumpFileInfo, error) {
@@ -35,6 +35,10 @@ func (dm *dumpManager) createDump() (*DumpFileInfo, error) {
 	return dm.dumpFileInfo(fileRoot, "/")
 }
 
+func (dm *dumpManager) encode(root *DumpFileInfo) error {
+	return gob.NewEncoder(dm.buff).Encode(root)
+
+}
 func (dm *dumpManager) dumpFileInfo(thisFile fs.FileInfo, parentDir string) (*DumpFileInfo, error) {
 	if thisFile == nil {
 		return nil, nil
