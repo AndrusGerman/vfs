@@ -18,7 +18,10 @@ type UtilsSync struct {
 	removeFiles            uint
 }
 
-func Sync(option UtilsSync, primary vfs.Filesystem, secondary ...vfs.Filesystem) error {
+func Sync(option *UtilsSync, primary vfs.Filesystem, secondary ...vfs.Filesystem) error {
+	if option == nil {
+		option = &UtilsSync{}
+	}
 	log.Println("dev note: This function is not complete")
 	option.primary = primary
 	option.secondary = secondary
