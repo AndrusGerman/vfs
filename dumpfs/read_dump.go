@@ -49,7 +49,7 @@ func (rdm *readDumpManager) createFileByDump(dumpFile *DumpFileInfo) error {
 		}
 	}
 	if !dumpFile.Dir {
-		file, err := rdm.fs.OpenFile(name, os.O_CREATE|os.O_RDWR, 0777)
+		file, err := rdm.fs.OpenFile(name, os.O_CREATE|os.O_RDWR, dumpFile.Mode)
 		if err != nil {
 			return err
 		}
