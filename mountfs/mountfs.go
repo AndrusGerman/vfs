@@ -96,6 +96,14 @@ func (f innerFile) Name() string {
 	return f.name
 }
 
+// Open opens the named file on the given Filesystem for reading.
+// If successful, methods on the returned file can be used for reading.
+// The associated file descriptor has mode os.O_RDONLY.
+// If there is an error, it will be of type *PathError.
+func (fs MountFS) Open(name string) (vfs.File, error) {
+	return fs.OpenFile(name, os.O_RDONLY, 0)
+}
+
 // OpenFile find the mount of the given path and executes OpenFile
 // on the corresponding filesystem.
 // It wraps the resulting file to return the path inside mountfs on Name()

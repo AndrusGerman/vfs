@@ -19,6 +19,10 @@ func NewReplication(primary vfs.Filesystem, secondary ...vfs.Filesystem) *Replic
 	}
 }
 
+func (ctx *ReplicationFS) Open(name string) (vfs.File, error) {
+	return newreplicationFileCreate(name, os.O_RDONLY, 0, ctx.primary, ctx.secondary...)
+}
+
 func (ctx *ReplicationFS) OpenFile(name string, flag int, perm os.FileMode) (vfs.File, error) {
 	return newreplicationFileCreate(name, flag, perm, ctx.primary, ctx.secondary...)
 }

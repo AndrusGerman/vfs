@@ -141,6 +141,11 @@ func TestOpenFile(t *testing.T) {
 	if n := f.Name(); n != "/tmp/testfile" {
 		t.Errorf("Unexpected filename: %s", n)
 	}
+
+	_, err = fs.Open("/tmp/testfile")
+	if err != nil {
+		t.Errorf("Open: %s", err)
+	}
 }
 
 func (fs *testDummyFS) Mkdir(name string, perm os.FileMode) error {

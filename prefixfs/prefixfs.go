@@ -32,6 +32,11 @@ func (fs *FS) OpenFile(name string, flag int, perm os.FileMode) (vfs.File, error
 	return fs.fs.OpenFile(fs.prefixPath(name), flag, perm)
 }
 
+// Open implements vfs.Filesystem.
+func (fs *FS) Open(name string) (vfs.File, error) {
+	return fs.fs.Open(fs.prefixPath(name))
+}
+
 // Remove implements vfs.Filesystem.
 func (fs *FS) Remove(name string) error {
 	return fs.fs.Remove(fs.prefixPath(name))

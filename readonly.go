@@ -44,6 +44,14 @@ func (fs RoFS) Mkdir(name string, perm os.FileMode) error {
 	return ErrReadOnly
 }
 
+// Open opens the named file on the given Filesystem for reading.
+// If successful, methods on the returned file can be used for reading.
+// The associated file descriptor has mode os.O_RDONLY.
+// If there is an error, it will be of type *PathError.
+func (fs RoFS) Open(name string) (File, error) {
+	return fs.OpenFile(name, os.O_RDONLY, 0)
+}
+
 // OpenFile returns ErrorReadOnly if flag contains os.O_CREATE, os.O_APPEND, os.O_WRONLY.
 // Otherwise it returns a read-only File with disabled Write(..) operation.
 func (fs RoFS) OpenFile(name string, flag int, perm os.FileMode) (File, error) {
