@@ -19,13 +19,8 @@ type Filesystem interface {
 	PathSeparator() uint8
 	OpenFile(name string, flag int, perm os.FileMode) (File, error)
 	Remove(name string) error
-	// RemoveAll(path string) error
 	Rename(oldpath, newpath string) error
 	Mkdir(name string, perm os.FileMode) error
-	// Symlink(oldname, newname string) error
-	// TempDir() string
-	// Chmod(name string, mode FileMode) error
-	// Chown(name string, uid, gid int) error
 	Stat(name string) (os.FileInfo, error)
 	Lstat(name string) (os.FileInfo, error)
 	ReadDir(path string) ([]os.FileInfo, error)
